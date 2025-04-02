@@ -36,13 +36,14 @@ public class ApiKeyAdminController {
      */
     @PostMapping
     public ApiKeyEntity createKey(@RequestBody CreateApiKeyRequest request) {
-        ApiKeyEntity key = new ApiKeyEntity();
-        key.setKey(UUID.randomUUID().toString().replace("-", ""));
-        key.setName(request.name());
-        key.setActive(true);
-        key.setIssuedAt(LocalDateTime.now());
-        key.setExpiresAt(request.expiresAt());
-        key.setAllowedIp(request.allowedIp());
+        ApiKeyEntity key = ApiKeyEntity.builder()
+                .key(UUID.randomUUID().toString().replace("-", ""))
+                .name(request.name)
+                .active(true)
+                .issuedAt(LocalDateTime.now())
+                .expiresAt(request.expiresAt())
+                .allowedIp(request.allowedIp())
+                .build();
 
         return apiKeyRepository.save(key);
     }

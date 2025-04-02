@@ -21,7 +21,7 @@ public class ApiKeyService {
         this.callbackUrlRepository = callbackUrlRepository;
     }
 
-    public boolean isValidKey(String apiKey, String clientIp) {
+    public boolean isValidKey(String apiKey, String clientIp, String callbackUrl) {
         Optional<ApiKeyEntity> apiKeyOpt = apiKeyRepository.findByKeyAndActiveIsTrue(apiKey);
 
         if (apiKeyOpt.isEmpty()) return false;

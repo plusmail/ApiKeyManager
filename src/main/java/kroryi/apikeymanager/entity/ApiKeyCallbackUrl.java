@@ -1,12 +1,13 @@
 package kroryi.apikeymanager.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
-@Getter
-@Setter
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "api_key_callback_urls")
 public class ApiKeyCallbackUrl {
 

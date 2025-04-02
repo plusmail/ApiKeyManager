@@ -12,7 +12,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component
 public class ApiKeyFilter extends OncePerRequestFilter {
 
     private final ApiKeyService apiKeyService;
@@ -28,8 +27,9 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
         String apiKey = request.getHeader("X-API-KEY");
         String clientIp = request.getRemoteAddr();
+        String callbackUrl = request.getParameter("callbackUrl"); // or from header
 
-        if (StringUtils.hasText(apiKey) && apiKeyService.isValidKey(apiKey, clientIp)) {
+        if (StringUtils.hasText(apiKey) && apiKeyService.isValidKey(apiKey, clientIp,callbackUrl)) {
             filterChain.doFilter(request, response);
         } else {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
