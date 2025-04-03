@@ -7,11 +7,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
-@Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "api_keys")
 public class ApiKeyEntity {
 
@@ -23,6 +24,7 @@ public class ApiKeyEntity {
     private String key;
 
     private String name;
+
     @Builder.Default
     private Boolean active = true;
 
@@ -30,11 +32,13 @@ public class ApiKeyEntity {
     private LocalDateTime issuedAt = LocalDateTime.now();
 
     private LocalDateTime expiresAt;
-    private String allowedIp; // ← 이 필드를 통해 getAllowedIp() 가능
+
+    private String allowedIp;
 
     @Builder.Default
+    @ToString.Exclude
     @OneToMany(mappedBy = "apiKey", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApiKeyCallbackUrl> callbackUrls = new ArrayList<>();
 
-    // 기타 getter/setter
+    // equals, hashCode, toString은 필요 시 직접 작성하거나 lombok으로 제한적으로 생성
 }

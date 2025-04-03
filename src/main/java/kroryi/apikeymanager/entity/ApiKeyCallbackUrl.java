@@ -3,8 +3,9 @@ package kroryi.apikeymanager.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Getter
+@Setter
 @Entity
-@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

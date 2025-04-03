@@ -1,12 +1,18 @@
 package kroryi.apikeymanager.controller;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.transaction.Transactional;
 import kroryi.apikeymanager.entity.ApiKeyCallbackUrl;
 import kroryi.apikeymanager.entity.ApiKeyEntity;
 import kroryi.apikeymanager.repository.ApiKeyCallbackUrlRepository;
 import kroryi.apikeymanager.repository.ApiKeyRepository;
+import kroryi.apikeymanager.service.ApiKeyService;
+import kroryi.apikeymanager.utils.JwtTokenUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import kroryi.apikeymanager.utils.JwtTokenUtil;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -17,10 +23,15 @@ public class ApiKeyAdminController {
 
     private final ApiKeyRepository apiKeyRepository;
     private final ApiKeyCallbackUrlRepository callbackUrlRepository;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    public ApiKeyAdminController(ApiKeyRepository apiKeyRepository, ApiKeyCallbackUrlRepository callbackUrlRepository) {
+    public ApiKeyAdminController(ApiKeyRepository apiKeyRepository,
+                                 ApiKeyCallbackUrlRepository callbackUrlRepository
+            , JwtTokenUtil jwtTokenUtil) {
         this.apiKeyRepository = apiKeyRepository;
         this.callbackUrlRepository = callbackUrlRepository;
+        this.jwtTokenUtil = jwtTokenUtil;
+
     }
 
     /**
@@ -37,7 +48,6 @@ public class ApiKeyAdminController {
     @PostMapping
     public ApiKeyEntity createKey(@RequestBody CreateApiKeyRequest request) {
         ApiKeyEntity key = ApiKeyEntity.builder()
-                .key(UUID.randomUUID().toString().replace("-", ""))
                 .name(request.name)
                 .active(true)
                 .issuedAt(LocalDateTime.now())
@@ -45,7 +55,11 @@ public class ApiKeyAdminController {
                 .allowedIp(request.allowedIp())
                 .build();
 
-        return apiKeyRepository.save(key);
+        ApiKeyEntity saved = apiKeyRepository.save(key);
+        String jwt = jwtTokenUtil.generateToken(saved);
+
+        saved.setKey(jwt); // JWT를 key로 저장
+        return apiKeyRepository.save(saved);
     }
 
     /**
@@ -104,10 +118,25 @@ public class ApiKeyAdminController {
      * 특정 Key의 콜백 URL 목록
      */
     @GetMapping("/{id}/callback-urls")
-    public List<ApiKeyCallbackUrl> getCallbackUrls(@PathVariable Long id) {
-        return callbackUrlRepository.findByApiKey_Key(String.valueOf(id));
-    }
+    public ResponseEntity<?> getCallbackUrls(@PathVariable Long id,
+                                             @RequestHeader("Authorization") String authHeader,
+                                             @RequestHeader("callbackUrl") String callbackUrl) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            Claims claims = jwtTokenUtil.parseToken(token);
 
+            String keyIdFromToken = claims.getSubject();
+            if (!keyIdFromToken.equals(String.valueOf(id))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: ID mismatch");
+            }
+
+            List<ApiKeyCallbackUrl> urls = callbackUrlRepository.findByApiKey_Key(String.valueOf(id));
+            return ResponseEntity.ok(urls);
+
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+    }
     // 요청용 DTO
     public record CreateApiKeyRequest(
             String name,

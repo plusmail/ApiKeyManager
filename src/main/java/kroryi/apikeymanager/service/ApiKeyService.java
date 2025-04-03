@@ -1,12 +1,14 @@
 package kroryi.apikeymanager.service;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import kroryi.apikeymanager.entity.ApiKeyCallbackUrl;
 import kroryi.apikeymanager.entity.ApiKeyEntity;
 import kroryi.apikeymanager.repository.ApiKeyCallbackUrlRepository;
 import kroryi.apikeymanager.repository.ApiKeyRepository;
+import kroryi.apikeymanager.utils.JwtTokenUtil;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,34 +17,42 @@ public class ApiKeyService {
 
     private final ApiKeyRepository apiKeyRepository;
     private final ApiKeyCallbackUrlRepository callbackUrlRepository;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    public ApiKeyService(ApiKeyRepository apiKeyRepository, ApiKeyCallbackUrlRepository callbackUrlRepository) {
+    public ApiKeyService(ApiKeyRepository apiKeyRepository,
+                         ApiKeyCallbackUrlRepository callbackUrlRepository,
+                         JwtTokenUtil jwtTokenUtil) {
         this.apiKeyRepository = apiKeyRepository;
         this.callbackUrlRepository = callbackUrlRepository;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
-    public boolean isValidKey(String apiKey, String clientIp, String callbackUrl) {
-        Optional<ApiKeyEntity> apiKeyOpt = apiKeyRepository.findByKeyAndActiveIsTrue(apiKey);
+    public boolean isValidKey(String jwtToken, String clientIp, String callbackUrl) {
+        try {
+            Claims claims = jwtTokenUtil.parseToken(jwtToken);
+            String keyId = claims.getSubject();
 
-        if (apiKeyOpt.isEmpty()) return false;
+            Optional<ApiKeyEntity> keyOpt = apiKeyRepository.findById(Long.valueOf(keyId));
+            if (keyOpt.isEmpty() || !keyOpt.get().getActive()) return false;
 
-        ApiKeyEntity keyEntity = apiKeyOpt.get();
+            ApiKeyEntity key = keyOpt.get();
 
-        // 만료 확인
-        if (keyEntity.getExpiresAt() != null && keyEntity.getExpiresAt().isBefore(LocalDateTime.now()))
+            // IP 제한
+            if (key.getAllowedIp() != null && !key.getAllowedIp().equals(clientIp)) return false;
+
+            // ✅ 콜백 URL 제한 검사
+            if (callbackUrl != null) {
+                List<ApiKeyCallbackUrl> allowed =
+                        callbackUrlRepository.findByApiKey_Key(key.getKey()); // JWT를 key로 쓰는 경우
+
+                boolean match = allowed.stream().anyMatch(cb -> callbackUrl.startsWith(cb.getUrl()));
+                if (!match) return false;
+            }
+
+            return true;
+
+        } catch (Exception e) {
             return false;
-
-        // IP 제한 확인
-        if (keyEntity.getAllowedIp() != null && !keyEntity.getAllowedIp().equals(clientIp))
-            return false;
-
-        // 콜백 URL 확인
-        if (callbackUrl != null) {
-            List<ApiKeyCallbackUrl> allowed = callbackUrlRepository.findByApiKey_Key(apiKey);
-            boolean match = allowed.stream().anyMatch(cb -> callbackUrl.startsWith(cb.getUrl()));
-            if (!match) return false;
         }
-
-        return true;
     }
 }
