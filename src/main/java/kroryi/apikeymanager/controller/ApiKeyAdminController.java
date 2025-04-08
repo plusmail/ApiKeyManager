@@ -9,6 +9,7 @@ import kroryi.apikeymanager.repository.ApiKeyCallbackUrlRepository;
 import kroryi.apikeymanager.repository.ApiKeyRepository;
 import kroryi.apikeymanager.service.ApiKeyService;
 import kroryi.apikeymanager.utils.JwtTokenUtil;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/admin/api-keys")
+@Log4j2
 public class ApiKeyAdminController {
 
     private final ApiKeyRepository apiKeyRepository;
@@ -54,6 +56,17 @@ public class ApiKeyAdminController {
                 .expiresAt(request.expiresAt())
                 .allowedIp(request.allowedIp())
                 .build();
+
+        // 콜백 URL 리스트 처리
+        if (request.callbackUrls != null && !request.callbackUrls.isEmpty()) {
+            for (String url : request.callbackUrls) {
+                ApiKeyCallbackUrl cb = ApiKeyCallbackUrl.builder()
+                        .url(url)
+                        .apiKey(key)
+                        .build();
+                key.getCallbackUrls().add(cb); // 연관관계 설정
+            }
+        }
 
         ApiKeyEntity saved = apiKeyRepository.save(key);
         String jwt = jwtTokenUtil.generateToken(saved);
@@ -123,9 +136,14 @@ public class ApiKeyAdminController {
                                              @RequestHeader("callbackUrl") String callbackUrl) {
         try {
             String token = authHeader.replace("Bearer ", "");
+
+            log.info("token: --->{}", token);
+
             Claims claims = jwtTokenUtil.parseToken(token);
 
             String keyIdFromToken = claims.getSubject();
+
+            log.info("keyIdFromToken: --->{}", keyIdFromToken);
             if (!keyIdFromToken.equals(String.valueOf(id))) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: ID mismatch");
             }
@@ -141,7 +159,9 @@ public class ApiKeyAdminController {
     public record CreateApiKeyRequest(
             String name,
             String allowedIp,
-            LocalDateTime expiresAt
+            LocalDateTime expiresAt,
+            List<String> callbackUrls // 👈 여기에 추가
+
     ) {
     }
 }

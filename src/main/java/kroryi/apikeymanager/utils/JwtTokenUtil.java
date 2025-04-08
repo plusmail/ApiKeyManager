@@ -31,14 +31,14 @@ public class JwtTokenUtil {
 
     public String generateToken(ApiKeyEntity key) {
         Date now = new Date();
-        Date expiry = Date.from(key.getExpiresAt().atZone(ZoneId.systemDefault()).toInstant());
+        Date expiryDate = new Date(now.getTime() + 86400000); // 예: 1일 후
 
         return Jwts.builder()
                 .setSubject(key.getId().toString())
                 .claim("name", key.getName())
                 .claim("allowedIp", key.getAllowedIp())
                 .setIssuedAt(now)
-                .setExpiration(expiry)
+                .setExpiration(expiryDate)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }

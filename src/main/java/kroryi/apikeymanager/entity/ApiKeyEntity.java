@@ -1,5 +1,6 @@
 package kroryi.apikeymanager.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,6 +39,7 @@ public class ApiKeyEntity {
     @Builder.Default
     @ToString.Exclude
     @OneToMany(mappedBy = "apiKey", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // 👈 추가
     private List<ApiKeyCallbackUrl> callbackUrls = new ArrayList<>();
 
     // equals, hashCode, toString은 필요 시 직접 작성하거나 lombok으로 제한적으로 생성

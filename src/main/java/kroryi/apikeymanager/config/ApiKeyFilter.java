@@ -86,6 +86,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                 path.startsWith("/swagger-ui.html") ||
                 path.startsWith("/swagger-resources") ||
                 path.startsWith("/webjars") ||
+                path.startsWith("/") ||
                 path.equals("/error") ||
                 path.equals("/admin/api-keys"); // ✅ 여기를 추가!
 

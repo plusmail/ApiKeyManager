@@ -1,5 +1,6 @@
 package kroryi.apikeymanager.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,7 @@ public class ApiKeyCallbackUrl {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "api_key_id")
+    @JsonBackReference // 👈 추가
     private ApiKeyEntity apiKey;
 
     // getter/setter
