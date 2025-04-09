@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Article View</title></head>
+<body>
+
+<h2>작성된 내용</h2>
+
+<!-- HTML 그대로 렌더링할 경우 utext 사용 -->
+<div th:utext="${article.content}"></div>
+
+</body>
+</html>
