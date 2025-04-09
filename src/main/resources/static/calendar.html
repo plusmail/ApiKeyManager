@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>예약 달력</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .today {
+            animation: blink 1s infinite;
+            font-weight: bold;
+        }
+
+        @keyframes blink {
+            0% {
+                background-color: #fff3cd;
+            }
+            50% {
+                background-color: #ffeeba;
+            }
+            100% {
+                background-color: #fff3cd;
+            }
+        }
+
+        .disabled-day {
+            pointer-events: none;
+            color: #ccc;
+        }
+
+        .scroll-container {
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+<div class="d-flex justify-content-center mb-3">
+    <button class="btn btn-outline-primary me-2" id="prevBtn">이전</button>
+
+    <div id="monthButtons" class="btn-group" role="group"></div>
+
+    <button class="btn btn-outline-primary ms-2" id="nextBtn">다음</button>
+</div>
+
+<div id="daysContainer" class="d-flex flex-wrap mb-3"></div>
+
+<h5>📌 선택된 날짜: <span id="selectedDateText">없음</span></h5>
+<div id="postContainer" class="scroll-container"></div>
+
+<script>
+    const today = new Date();
+    let currentYear = today.getFullYear();
+    let currentMonth = today.getMonth(); // 0 ~ 11
+    const loadedDates = new Set();
+    let currentCenterDate = new Date(); // 기준일
+    const monthNames = [...Array(12)].map((_, i) => `${i + 1}월`);
+    const monthButtons = document.getElementById('monthButtons');
+    const daysContainer = document.getElementById('daysContainer');
+    const selectedDateText = document.getElementById('selectedDateText');
+    const postContainer = document.getElementById('postContainer');
+    let isLoading = false;
+
+    function renderMonthButtons() {
+        monthButtons.innerHTML = '';
+        monthNames.forEach((name, idx) => {
+            const btn = document.createElement('button');
+            btn.className = `btn ${idx === currentMonth ? 'btn-primary' : 'btn-outline-primary'}`;
+            btn.textContent = name;
+            btn.onclick = () => {
+                currentMonth = idx;
+                renderMonthButtons();
+                renderDays();
+            };
+            monthButtons.appendChild(btn);
+        });
+    }
+
+    function renderDays() {
+        daysContainer.innerHTML = '';
+        const date = new Date(currentYear, currentMonth, 1);
+        const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        for (let day = 1; day <= lastDate; day++) {
+            const fullDate = new Date(currentYear, currentMonth, day);
+            const yyyyMMdd = formatDate(fullDate); // <-- 이걸 사용
+
+            const dayBtn = document.createElement('button');
+            dayBtn.className = 'btn btn-light m-1';
+            dayBtn.textContent = day;
+
+            if (fullDate.toDateString() === today.toDateString()) {
+                dayBtn.classList.add('today');
+            }
+
+            if (fullDate < today.setHours(0, 0, 0, 0)) {
+                dayBtn.classList.add('disabled-day');
+            } else {
+                dayBtn.onclick = () => {
+                    selectedDateText.textContent = yyyyMMdd;
+                    scrollToDate(yyyyMMdd); // ✅ 이 부분
+                    console.log("------------>" + selectedDateText.textContent)
+                    // loadPosts(yyyyMMdd);
+                };
+            }
+
+            daysContainer.appendChild(dayBtn);
+        }
+    }
+
+    // 📌 게시글 1일치 로딩
+    async function loadPostsByDate(date, position = 'append') {
+        const dateStr = formatDate(date);
+        if (loadedDates.has(dateStr)) return;
+
+        isLoading = true;
+
+        const res = await fetch(`/api/posts/${dateStr}`);
+        const data = await res.json();
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'mb-3';
+        wrapper.id = `day-${dateStr}`
+
+        wrapper.innerHTML = `<h6 class="text-secondary">${dateStr}</h6>`;
+        if (date.toDateString() === today.toDateString()) {
+            wrapper.style.backgroundColor = '#fff3cd';
+            wrapper.style.border = '1px solid #ffc107';
+            wrapper.style.padding = '10px';
+        }
+
+        data.forEach(post => {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                    <div style="height: 300px; overflow: hidden;">
+                        <strong>${post.title}</strong><br>
+                        <small>${post.content}</small>
+                    </div>
+                    <hr>`;
+            wrapper.appendChild(div);
+        });
+
+        if (position === 'prepend') {
+            postContainer.prepend(wrapper);
+        } else {
+            postContainer.appendChild(wrapper);
+        }
+
+        loadedDates.add(dateStr);
+        isLoading = false;
+    }
+    // 🔄 초기 10일치 로딩 (오늘 기준 ±5일)
+    function loadInitialRange() {
+        for (let i = -5; i <= 4; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            const position = i < 0 ? 'prepend' : 'append';
+            loadPostsByDate(date, position);
+        }
+
+        // 중앙 스크롤 위치 조정 (지연 후)
+        setTimeout(() => {
+            const center = postContainer.scrollHeight / 2 - postContainer.clientHeight / 2;
+            postContainer.scrollTop = center;
+        }, 500);
+    }
+
+    // 무한 스크롤 시 다른 날짜 게시물 로딩 (예: 다음날짜)
+    postContainer.addEventListener('scroll', () => {
+        const top = postContainer.scrollTop;
+        const bottom = postContainer.scrollHeight - postContainer.scrollTop - postContainer.clientHeight;
+
+        if (!isLoading) {
+            if (top < 100) {
+                // 스크롤 위: 이전 날짜 로딩
+                const earliest = [...loadedDates].sort()[0];
+                const prevDate = new Date(earliest);
+                prevDate.setDate(prevDate.getDate() - 1);
+                loadPostsByDate(prevDate, 'prepend');
+            }
+
+            if (bottom < 100) {
+                // 스크롤 아래: 다음 날짜 로딩
+                const latest = [...loadedDates].sort().reverse()[0];
+                const nextDate = new Date(latest);
+                nextDate.setDate(nextDate.getDate() + 1);
+                loadPostsByDate(nextDate, 'append');
+            }
+        }
+    });
+    // function loadPosts(dateStr) {
+    //     postContainer.innerHTML = '로딩 중...';
+    //     fetch(`/api/posts/${dateStr}`)
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             postContainer.innerHTML = '';
+    //             data.forEach(post => {
+    //                 const div = document.createElement('div');
+    //                 div.innerHTML = `<b>${post.title}</b><br><small>${post.content}</small><hr>`;
+    //                 postContainer.appendChild(div);
+    //             });
+    //         });
+    // }
+
+    // 이전 / 다음 버튼
+    document.getElementById('prevBtn').onclick = () => {
+        currentMonth = (currentMonth - 1 + 12) % 12;
+        renderMonthButtons();
+        renderDays();
+    };
+    document.getElementById('nextBtn').onclick = () => {
+        currentMonth = (currentMonth + 1) % 12;
+        renderMonthButtons();
+        renderDays();
+    };
+
+
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // 1월 = 0
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    function scrollToDate(dateStr) {
+        const el = document.getElementById(`day-${dateStr}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            // 해당 날짜가 없으면 로드하고 나서 이동
+            const dateObj = new Date(dateStr);
+            loadPostsByDate(dateObj).then(() => {
+                const newEl = document.getElementById(`day-${dateStr}`);
+                if (newEl) {
+                    newEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });function scrollToDate(dateStr) {
+                const el = document.getElementById(`day-${dateStr}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    // 해당 날짜가 없으면 로드하고 나서 이동
+                    const dateObj = new Date(dateStr);
+                    loadPostsByDate(dateObj).then(() => {
+                        const newEl = document.getElementById(`day-${dateStr}`);
+                        if (newEl) {
+                            newEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    });
+                }
+            }
+        }
+    }
+    renderMonthButtons();
+    renderDays();
+        loadInitialRange();
+
+
+</script>
+
+<style>
+    .scroll-container {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+</style>
+</body>
+</html>
