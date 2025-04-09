@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>가입 완료</title>
+</head>
+<body>
+<h2>가입이 완료되었습니다!</h2>
+<p>발급된 API Key: <strong th:text="${apiKey}"></strong></p>
+<p><a th:href="@{/login}">로그인하러 가기</a></p>
+</body>
+</html>

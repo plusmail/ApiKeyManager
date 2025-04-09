@@ -31,6 +31,7 @@ public class SecurityConfig {
     public ApiKeyFilter apiKeyFilter(ApiKeyService apiKeyService, JwtTokenUtil jwtTokenUtil) {
         return new ApiKeyFilter(apiKeyService, jwtTokenUtil);
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, ApiKeyFilter apiKeyFilter) throws Exception {
 //        http
@@ -55,11 +56,19 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/**").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/images/**").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/uploads/**").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/uploadImage/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/admin/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/admin/api-keys").permitAll() // ✅ 임시로 발급 경로 허용
                         .requestMatchers("/error").permitAll() // ✅ 이 줄 추가!
+                        .requestMatchers("/register", "/register-success").permitAll()
                         .requestMatchers(
-                                "/swagger-ui/index.html","/swagger-ui/**", "/v3/api-docs/**","/v3/api-docs/swagger-config", "/swagger-ui.html"
+                                "/js/**", "/css/**", "/images/**", "/webjars/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs/swagger-config", "/swagger-ui.html"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -78,15 +87,16 @@ public class SecurityConfig {
     }
 
     // 관리자 계정 예시
-    @Bean
-    public UserDetailsService users() {
-        UserDetails admin = User.withDefaultPasswordEncoder()
-                .username("admin")
-                .password("1234")
-                .roles("ADMIN")
-                .build();
-        return new InMemoryUserDetailsManager(admin);
-    }
+//    @Bean
+//    public UserDetailsService users() {
+//        UserDetails admin = User.withDefaultPasswordEncoder()
+//                .username("admin")
+//                .password("1234")
+//                .roles("ADMIN")
+//                .build();
+//        return new InMemoryUserDetailsManager(admin);
+//    }
+
     @Bean
     public UserDetailsService userDetailsService() {
         return userDetailsService;
