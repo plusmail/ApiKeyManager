@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>예약 달력</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js"></script>
+
+    <style>
+        .reserve-btn {
+            margin-top: 4px;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="calendar"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let calendarEl = document.getElementById('calendar');
+
+        let calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'ko',
+            events: '/api/reservations/all', // <-- 예약 정보 불러오기
+
+            eventColor: '#257e4a',
+            eventDisplay: 'block', // 텍스트 표시
+
+            eventDidMount: function(info) {
+                // 예약자 이름과 메모 표시
+                info.el.title = info.event.title;
+            },
+
+            dayCellContent: function(arg) {
+                let dateStr = arg.date.toISOString().split('T')[0];
+                return {
+                    html: `
+          <div>${arg.dayNumberText}</div>
+          <button class="reserve-btn" data-date="${dateStr}">예약</button>
+        `
+                };
+            }
+        });
+        calendar.render();
+
+        // 예약 버튼 클릭
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('reserve-btn')) {
+                const date = e.target.dataset.date;
+                const name = prompt("이름을 입력하세요:");
+                const memo = prompt("메모를 입력하세요:");
+
+                fetch('/api/reservations', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        reservationDate: date,
+                        name: name,
+                        memo: memo
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        alert("예약이 완료되었습니다!");
+                        calendar.refetchEvents(); // 새로고침 없이 이벤트 다시 불러오기
+
+                    });
+            }
+        });
+    });
+</script>
+</body>
+</html>

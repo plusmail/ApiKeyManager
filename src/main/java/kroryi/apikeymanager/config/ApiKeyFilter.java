@@ -94,6 +94,8 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                 path.startsWith("/images/**") ||
                 path.startsWith("/uploads/**") ||
                 path.startsWith("/uploadImage/**") ||
+                path.startsWith("/api/**") ||
+                path.startsWith("/reservation.html") ||
                 path.equals("/error") ||
                 path.equals("/*") ||
                 path.equals("/admin/api-keys"); // ✅ 여기를 추가!

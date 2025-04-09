@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/images/**").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/api/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/uploads/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/uploadImage/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/admin/**").permitAll() // 이제는 인증 필요로 변경
