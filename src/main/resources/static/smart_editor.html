@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartEditor2 Example</title>
+</head>
+<body>
+<form method="post" action="/submit">
+    <textarea id="content" name="content" style="display: none;"></textarea>
+    <input type="submit" value="제출">
+</form>
+<script src="/js/jindo.min.js"></script>
+<script src="/js/jindo_component.js"></script>
+<script src="/js/SE2B_Configuration_General.js"></script>
+<script src="/js/SE2B_Configuration_Service.js"></script>
+<script src="/js/SE2BasicCreator.js"></script>
+
+<!-- SmartEditor2 초기화 스크립트 -->
+<script type="text/javascript" src="/js/HuskyEZCreator.js"></script>
+<script>
+    let oEditors = [];
+
+    window.onload = function () {
+        nhn.husky.EZCreator.createInIFrame({
+            oAppRef: oEditors,
+            elPlaceHolder: 'content',
+            sSkinURI: '/SmartEditor2Skin.html',
+            fCreator: 'createSEditor2'
+        });
+    };
+</script>
+</body>
+</html>

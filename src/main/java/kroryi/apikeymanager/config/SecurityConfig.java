@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,7 +34,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, ApiKeyFilter apiKeyFilter) throws Exception {
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http, ApiKeyFilter apiKeyFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 //        http
 //                .csrf(AbstractHttpConfigurer::disable)// 실무에서는 disable하면 안됨.
 //                .cors(AbstractHttpConfigurer::disable)
@@ -57,6 +59,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/**").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/img/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/images/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/api/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/uploads/**").permitAll() // 이제는 인증 필요로 변경
@@ -69,7 +72,7 @@ public class SecurityConfig {
                                 "/js/**", "/css/**", "/images/**", "/webjars/**"
                         ).permitAll()
                         .requestMatchers(
-                                "/swagger-ui/index.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs/swagger-config", "/swagger-ui.html"
+                                "/swagger-ui/index.html","/swagger-resources/**", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs/swagger-config", "/swagger-ui.html"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -82,7 +85,11 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
                 )
-                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class); // ✅ 이게 핵심!!
+                .headers(headers -> headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin) // or disable()
+                )
+        ;
+//                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class); // ✅ 이게 핵심!!
 
         return http.build();
     }

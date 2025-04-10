@@ -83,7 +83,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         // Swagger 관련 경로 제외
         return path.startsWith("/swagger-ui") ||
                 path.startsWith("/v3/api-docs") ||
-                path.startsWith("/swagger-ui.html") ||
+                path.startsWith("/swagger-ui/index.html") ||
                 path.startsWith("/swagger-resources") ||
                 path.startsWith("/webjars") ||
                 path.startsWith("/") ||
