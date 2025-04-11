@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>SmartEditor2 Example</title>
+    <link rel="stylesheet" th:href="@{/css/smart_editor2.css}">
+</head><body>
+<h1>SmartEditor2 사용 예시</h1>
+
+<textarea id="editorTxt" name="content" rows="10" cols="80"></textarea>
+
+<script type="text/javascript" th:src="@{/js/HuskyCore.js}" charset="utf-8"></script>
+<script type="text/javascript" th:src="@{/js/HuskyEZCreator.js}" charset="utf-8"></script>
+<script type="text/javascript" th:src="@{/js/SE2BasicCreator.js}" charset="utf-8"></script>
+<script type="text/javascript">
+    var oEditors = [];
+
+    nhn.husky.EZCreator.createInIFrame({
+        oAppRef: oEditors,
+        elPlaceHolder: "editorTxt",
+        sSkinURI: "/SmartEditor2Skin.html",
+        fCreator: "createSEditor2"
+    });
+
+    function submitContents() {
+        oEditors.getById["editorTxt"].exec("UPDATE_CONTENTS_FIELD");
+        var content = document.getElementById("editorTxt").value;
+        alert("에디터 내용: " + content);
+    }
+</script>
+
+<button onclick="submitContents()">저장</button>
+</body>
+</html>

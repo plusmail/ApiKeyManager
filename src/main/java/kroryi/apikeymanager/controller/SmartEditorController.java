@@ -5,6 +5,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
@@ -17,6 +18,13 @@ public class SmartEditorController {
 
     @Value("${file.location}")
     private String fileLocation;
+
+
+    @GetMapping("/smarteditor")
+    public String smarteditor(Model model) {
+
+        return "smarteditor";
+    }
 
     @PostMapping("/editor_upload")
     @ResponseBody
