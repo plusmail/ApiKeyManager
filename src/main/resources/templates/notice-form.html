@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head><meta charset="UTF-8"><title>공지 등록</title></head>
+<body>
+<h2>공지 등록</h2>
+<form th:action="@{/notices}" th:object="${notice}" method="post" enctype="multipart/form-data">
+    <label>제목:</label>
+    <input type="text" th:field="*{title}" required><br><br>
+
+    <label>내용:</label><br>
+    <textarea th:field="*{content}" rows="6" cols="50"></textarea><br><br>
+    <label>첨부 이미지:</label>
+    <input type="file" name="files" multiple><br><br>
+    <button type="submit">등록</button>
+</form>
+</body>
+</html>

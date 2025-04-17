@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1 th:text="${notice.title}"></h1>
+<p th:text="${notice.content}"></p>
+
+<h3>첨부 이미지</h3>
+<div th:if="${#lists.isEmpty(notice.images)}">
+    <p>첨부된 이미지가 없습니다.</p>
+</div>
+
+<div th:if="${!#lists.isEmpty(notice.images)}">
+    <ul>
+        <li th:each="file : ${notice.images}">
+            <div th:if="${file.type.startsWith('image/')}">
+                <!-- 이미지 프리뷰 -->
+                <img th:src="@{'/files/image/' + ${file.id}}" style="max-width: 300px;">
+            </div>
+            <div th:if="${!file.type.startsWith('image/')}">
+                <!-- PDF 등 기타 파일은 다운로드 링크 -->
+                <a th:href="@{'/files/file/' + ${file.id}}" th:text="${file.name}" target="_blank" download></a>
+                <button type="button" th:attr="data-id=${file.id}" onclick="downloadFile(this)">다운로드</button>
+<!--                <div th:if="${file.type == 'application/pdf'}">-->
+<!--                    <iframe th:src="@{'/files/file/' + ${file.id}}" width="100%" height="600px" style="border: none;"></iframe>-->
+<!--                </div>-->
+<!--                <div th:if="${file.type == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'}">-->
+<!--                    <iframe th:src="'https://view.officeapps.live.com/op/embed.aspx?src=' + ${file.publicUrl}"-->
+<!--                            width="100%" height="600px">-->
+<!--                    </iframe>-->
+<!--                </div>-->
+                <!-- 다운로드 버튼 (보이는 부분) -->
+
+            </div>
+        </li>
+    </ul>
+</div>
+</body>
+<script>
+    function downloadFile(button) {
+        const fileId = button.getAttribute("data-id");
+        const url = `/files/` + fileId;
+
+        // <a> 태그를 동적으로 만들어 클릭 트리거
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = ""; // 브라우저가 다운로드 인식
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</html>

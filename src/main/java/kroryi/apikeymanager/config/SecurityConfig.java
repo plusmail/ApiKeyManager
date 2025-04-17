@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers("/img/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/images/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/api/**").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/files/**").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/notices/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/uploads/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/upload-form/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/multi-upload-form/**").permitAll() // 이제는 인증 필요로 변경

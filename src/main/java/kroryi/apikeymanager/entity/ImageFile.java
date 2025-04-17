@@ -21,5 +21,11 @@ public class ImageFile {
     @Lob
     private byte[] data;
 
-    // Getters & Setters
+    @ManyToOne
+    @JoinColumn(name = "notice_id")
+    private Notice notice;
+
+    @Transient
+    private String publicUrl;
+
 }
