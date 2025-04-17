@@ -81,24 +81,9 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // Swagger 관련 경로 제외
-        return path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs") ||
-                path.startsWith("/swagger-ui/index.html") ||
-                path.startsWith("/swagger-resources") ||
-                path.startsWith("/webjars") ||
-                path.startsWith("/") ||
-                path.startsWith("/register") ||
-                path.startsWith("/js/**") ||
-                path.startsWith("/css/**") ||
-                path.startsWith("/img/**") ||
-                path.startsWith("/images/**") ||
-                path.startsWith("/uploads/**") ||
-                path.startsWith("/uploadImage/**") ||
-                path.startsWith("/api/**") ||
-                path.startsWith("/reservation.html") ||
-                path.equals("/error") ||
-                path.equals("/*") ||
-                path.equals("/admin/api-keys"); // ✅ 여기를 추가!
+        return !path.startsWith("/api/") ||
+                path.startsWith("/swagger-ui/") ||
+                path.startsWith("/upload-form/");
 
     }
 }

@@ -34,35 +34,19 @@ public class SecurityConfig {
     }
 
     @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http, ApiKeyFilter apiKeyFilter) throws Exception {
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(AbstractHttpConfigurer::disable)// 실무에서는 disable하면 안됨.
-//                .cors(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(auth -> auth
-//                        // Swagger 경로 허용
-//                        .requestMatchers(
-//                                "/swagger-ui/**",
-//                                "/v3/api-docs/**",
-//                                "/swagger-ui.html"
-//                        ).permitAll()
-//
-//                        // 그 외는 인증 필요
-//                        .anyRequest().authenticated()
-//                )
-//                .httpBasic(Customizer.withDefaults()); // 또는 formLogin(), 필요 시 제거 가능
-//
-//        return http.build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, ApiKeyFilter apiKeyFilter) throws Exception {
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll() // 이제는 인증 필요로 변경
-                        .requestMatchers("/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/img/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/images/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/api/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/uploads/**").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/upload-form/**").permitAll() // 이제는 인증 필요로 변경
+                        .requestMatchers("/multi-upload-form/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/uploadImage/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/admin/**").permitAll() // 이제는 인증 필요로 변경
                         .requestMatchers("/admin/api-keys").permitAll() // ✅ 임시로 발급 경로 허용
@@ -88,22 +72,10 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin) // or disable()
                 )
-        ;
-//                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class); // ✅ 이게 핵심!!
+                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class); // ✅ 이게 핵심!!
 
         return http.build();
     }
-
-    // 관리자 계정 예시
-//    @Bean
-//    public UserDetailsService users() {
-//        UserDetails admin = User.withDefaultPasswordEncoder()
-//                .username("admin")
-//                .password("1234")
-//                .roles("ADMIN")
-//                .build();
-//        return new InMemoryUserDetailsManager(admin);
-//    }
 
     @Bean
     public UserDetailsService userDetailsService() {

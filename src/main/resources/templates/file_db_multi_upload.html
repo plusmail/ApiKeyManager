@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>다중 이미지 업로드</title>
+</head>
+<body>
+<h2>이미지 여러 개 업로드</h2>
+
+<form th:action="@{/images/multi-upload}" method="post" enctype="multipart/form-data">
+    <input type="file" name="files" multiple accept="image/*" required />
+    <button type="submit">업로드</button>
+</form>
+
+</body>
+</html>

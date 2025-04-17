@@ -25,9 +25,6 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String uploadPath = Paths.get("uploads").toAbsolutePath().toUri().toString();
 
-//        registry
-//                .addResourceHandler("/**") // 요청 URL
-//                .addResourceLocations("classpath:/static/"); // 실제 파일 경로
         registry
                 .addResourceHandler("/js/**") // 요청 URL
                 .addResourceLocations("classpath:/static/js/"); // 실제 파일 경로
@@ -44,15 +41,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     }
 
-//    @Override
-//    public void addViewControllers(ViewControllerRegistry registry) {
-//        // 정적 리소스와 API 요청 제외
-//        registry.addViewController("/{spring:(?!js|css|img|images|api|favicon\\.ico|static).*$}")
-//                .setViewName("forward:/index.html");
-//
-//        registry.addViewController("/**/{spring:(?!js|css|img|images|api|favicon\\.ico|static).*$}")
-//                .setViewName("forward:/index.html");
-//    }
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
